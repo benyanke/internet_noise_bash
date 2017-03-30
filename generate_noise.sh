@@ -2,7 +2,7 @@
 
 # Wait time range for random wait time generator
 lowerWaitTime="1"
-upperWaitTime="6"
+upperWaitTime="10"
 
 threads="3"
 
@@ -54,7 +54,7 @@ function crawl() {
 
   sleepVal=$(( ( RANDOM % $upperWaitTime ) + $lowerWaitTime ))
   echo "Sleeping for $sleepVal seconds"
-  sleep 0.$sleepVal
+  sleep $sleepVal
 
   tocrawl="$1"
 
@@ -90,14 +90,26 @@ function crawl() {
 
 }
 
-seed=$(getSeedUrl "`getRandomWord` `getRandomWord`")
 
-echo "Starting with $seed"
-crawl "$seed"
+function startCrawl() {
+  seed=$(getSeedUrl "`getRandomWord` `getRandomWord`")
+  echo "Starting with $seed"
+  crawl "$seed"
+}
 
-exit;
 
-# makeRequestFromWords `getRandomWord` `getRandomWord`
+function getRandomUrl() {
+  seed=$(getSeedUrl "`getRandomWord` `getRandomWord`")
 
+  echo "Crawling $seed"
+#  curl "$seed" > /dev/null 2> /dev/null
+  curl "$seed" -L
+
+  getRandomUrl
+}
+
+getRandomUrl;
+
+startCrawl
 
 
