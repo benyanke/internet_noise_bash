@@ -1,11 +1,61 @@
 #!/bin/bash
 
-upperWaitTime=""
-lowerWaitTime=""
+# Wait time range for random wait time generator
+lowerWaitTime="1"
+upperWaitTime="6"
 
 threads="3"
 
 wordFile="nouns.list"
+
+
+# start="https://en.wikipedia.org/wiki/Main_Page"
+start="http://www.cnn.com/"
+
+
+
+
+function crawl() {
+
+  sleepVal=$(( ( RANDOM % $upperWaitTime ) + $lowerWaitTime ))
+  echo "Sleeping for $sleepVal seconds"
+  sleep 0.$sleepVal
+
+  tocrawl="$1"
+
+  # If blank url / no url found, reset
+  # TODO: work on this more
+  if [[ $toCrawl == "" ]] ; then
+
+    tocrawl=$start;
+
+  fi
+
+  # make page request, return all links on page
+  allUrlsOnPage="$(lynx -dump -listonly "$tocrawl"  2> /dev/null | awk '{print $2}' | grep "http*")"
+
+  # Count URLs found
+  numOfUrls=$(printf "$allUrlsOnPage" | wc -l)
+
+  # Convert to array
+  allUrlsOnPage=($allUrlsOnPage)
+
+  # Randomly select array index to pick URL from page
+  urlToSelect=$(( ( RANDOM % ($numOfUrls + 1) ) ))
+#  urlToSelect=$(( ( RANDOM % $numOfUrls ) + 1 ))
+
+  selectedUrl=${allUrlsOnPage[$urlToSelect]}
+
+
+  # Recursive step - crawl randomly selected url
+  echo "Crawling $selectedUrl"
+  crawl "$selectedUrl"
+
+
+}
+
+crawl $start
+exit;
 
 
 urlencode() {
@@ -44,5 +94,6 @@ function makeRequestFromWords() {
 
 
 makeRequestFromWords `getRandomWord` `getRandomWord`
+
 
 
